@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="Achievement"
+        android:id="@+id/mAchievement"
+        app:showAsAction="ifRoom"
+        android:icon="@android:drawable/btn_star_big_on" />
+
+    <item android:title="Friend Nearby"
+        android:id="@+id/mFriend"
+        android:icon="@android:drawable/btn_dialog" />
+
+
+    <item android:title="Profile"
+        android:id="@+id/mProfile" />
+
+    <item android:title="Help"
+        android:id="@+id/mHelp"/>
+
+    <item android:title="Log Out"
+        android:id="@+id/mLogout" />
+
+</menu>

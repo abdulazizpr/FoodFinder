@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="0dp"
+    android:paddingLeft="0dp"
+    android:paddingRight="0dp"
+    android:paddingTop="0dp"
+    tools:context="com.example.android.findfood.your_profile">
+
+    <android.support.v7.widget.Toolbar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#64B5F6"
+        android:theme="?attr/actionBarTheme"
+        android:minHeight="?attr/actionBarSize"
+        android:id="@+id/toolbar3"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/toolbar3">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:layout_marginTop="20dp"
+                android:id="@+id/uPhoto"
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:src="@drawable/user"
+                android:paddingBottom="20dp"
+                android:layout_centerHorizontal="true" />
+
+            <TextView
+                android:text="Username"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/uName"
+                android:paddingBottom="20dp"
+                android:textSize="25sp"
+                android:gravity="center"/>
+
+
+            <TextView
+                android:text="Your Score :"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="25sp"
+                android:textAlignment="center"
+                android:gravity="center"/>
+
+            <TextView
+                android:text="50"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/uScore"
+                android:textSize="50sp"
+                android:textAlignment="center"
+                android:textStyle="bold"
+                android:gravity="center"/>
+
+
+
+
+            <TextView
+                android:text="Your Current Location :"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="25sp"
+                android:textAlignment="center"
+                android:gravity="center"/>
+
+            <TextView
+                android:text="....."
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/uLocation"
+                android:layout_weight="1"
+                android:textSize="25sp"
+                android:textAlignment="center"
+                android:gravity="center"/>
+        </LinearLayout>
+    </ScrollView>
+
+</RelativeLayout>
