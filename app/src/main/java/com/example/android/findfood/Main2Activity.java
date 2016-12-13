@@ -115,7 +115,7 @@ public class Main2Activity extends AppCompatActivity implements OnMapReadyCallba
         String pesan = intent.getStringExtra(MainActivity.EXTRA_MESSAGE1);
         id = intent.getStringExtra(MainActivity.EXTRA_ID);
         //tampilkan toast
-        Toast t = Toast.makeText(getApplicationContext(), pesan + id , Toast.LENGTH_LONG);
+        Toast t = Toast.makeText(getApplicationContext(), pesan, Toast.LENGTH_LONG);
         t.show();
 
 
