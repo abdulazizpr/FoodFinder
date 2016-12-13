@@ -11,19 +11,20 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Build;
-import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -43,13 +44,19 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.logging.Handler;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-import static com.example.android.findfood.R.drawable.tanda;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class Main2Activity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
@@ -64,9 +71,11 @@ public class Main2Activity extends AppCompatActivity implements OnMapReadyCallba
     Marker mCurrLocationMarker;
     LocationRequest mLocationRequest;
 
+    public static final String EXTRA_ID = "id" ;
     public static final String EXTRA_MESSAGE3 = "profile" ;
     public static final String EXTRA_MESSAGE2 = "badges";
     public static final String EXTRA_MESSAGE4 = "friend" ;
+    public String id = "";
     static final int ACT2_REQUEST = 99;  // request code
 
     @Override
@@ -104,8 +113,9 @@ public class Main2Activity extends AppCompatActivity implements OnMapReadyCallba
         Intent intent = getIntent();
         //ambil datanya
         String pesan = intent.getStringExtra(MainActivity.EXTRA_MESSAGE1);
+        id = intent.getStringExtra(MainActivity.EXTRA_ID);
         //tampilkan toast
-        Toast t = Toast.makeText(getApplicationContext(), pesan, Toast.LENGTH_LONG);
+        Toast t = Toast.makeText(getApplicationContext(), pesan + id , Toast.LENGTH_LONG);
         t.show();
 
 
@@ -116,6 +126,11 @@ public class Main2Activity extends AppCompatActivity implements OnMapReadyCallba
         //alert dialog
         klikHelp();
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        moveTaskToBack(true);
     }
 
     //tollbar
@@ -172,10 +187,37 @@ public class Main2Activity extends AppCompatActivity implements OnMapReadyCallba
 
     //keluar
     public void klikKeluar() {
-        Intent intent2 = getIntent();
-        intent2.putExtra(MainActivity.EXTRA_MESSAGE1, "You Have Been Log Out.");
-        setResult(RESULT_OK, intent2);
-        finish();
+
+        ConnectivityManager connMgr = (ConnectivityManager)
+                getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+
+        if (networkInfo != null && networkInfo.isConnected()) {
+
+            JSONObject post_dict = new JSONObject();
+
+            try {
+                post_dict.put("id" ,id );
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            if (post_dict.length() > 0) {
+
+                Intent intent2 = getIntent();
+                intent2.putExtra(MainActivity.EXTRA_MESSAGE1, "You Have Been Log Out.");
+                new Logout().execute(String.valueOf(post_dict));
+                setResult(RESULT_OK, intent2);
+                finish();
+
+            }
+
+        }else{
+            // tampilkan error
+            Toast t = Toast.makeText( getApplicationContext(), "Tidak ada koneksi!",Toast.LENGTH_LONG);
+            t.show();
+        }
 
     }
 
@@ -184,6 +226,7 @@ public class Main2Activity extends AppCompatActivity implements OnMapReadyCallba
         Intent intent = new Intent(this, Achievement.class);
         //cara 2
         intent.putExtra(Achievement.EXTRA_MESSAGE2, "This is Your Badges");
+
         startActivityForResult(intent, ACT2_REQUEST);
     }
 
@@ -192,6 +235,7 @@ public class Main2Activity extends AppCompatActivity implements OnMapReadyCallba
         Intent intent = new Intent(this, your_profile.class);
         //cara 2
         intent.putExtra(your_profile.EXTRA_MESSAGE3, "This is Your Profile");
+        intent.putExtra(your_profile.EXTRA_ID, id);
         startActivityForResult(intent, ACT2_REQUEST);
     }
 
@@ -455,6 +499,8 @@ public class Main2Activity extends AppCompatActivity implements OnMapReadyCallba
         ImageView image = new ImageView(this);
         image.setImageResource(R.drawable.images);
 
+
+
         AlertDialog.Builder builder =
                 new AlertDialog.Builder(this).
                         setTitle("Turn On Your GPS or Location Setting").
@@ -485,5 +531,81 @@ public class Main2Activity extends AppCompatActivity implements OnMapReadyCallba
         builder.create().show();
     }
 
+    public class Logout extends AsyncTask<String, Void, String> {
+
+        private static final String TAG = "";
+
+        public String id;
+
+        protected void onPreExecute(){
+
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            String JsonResponse = "";
+            String JsonDATA = params[0];
+            HttpURLConnection urlConnection = null;
+            BufferedReader reader = null;
+            try {
+                URL url = new URL("http://makersinstitute.id:5000/users/logout/");
+                urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setDoOutput(true);
+                // is output buffer writter
+                urlConnection.setRequestMethod("POST");
+                urlConnection.setRequestProperty("Content-Type", "application/json");
+                urlConnection.setRequestProperty("Accept", "application/json");
+                //set headers and method
+                Writer writer = new BufferedWriter(new OutputStreamWriter(urlConnection.getOutputStream(), "UTF-8"));
+                writer.write(JsonDATA);
+
+                // json data
+                writer.close();
+                InputStream inputStream = urlConnection.getInputStream();
+
+
+                Reader r = null;
+                r = new InputStreamReader(inputStream, "UTF-8");
+                BufferedReader bfr  = new BufferedReader(r);
+                String s;
+                StringBuilder sb = new StringBuilder();
+                s = bfr.readLine();
+                while (s != null) {
+                    sb.append(s);
+                    s = bfr.readLine(); //baca per baris
+                }
+
+                JsonResponse  =  sb.toString().trim();
+
+                //send to post execute
+                return JsonResponse;
+
+
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }  finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (final IOException e) {
+                        Log.e(TAG, "Error closing stream", e);
+                    }
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            /*Toast.makeText(getApplicationContext(), result,
+                    Toast.LENGTH_LONG).show();*/
+
+
+        }
+    }
 
 }

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.HttpURLConnection;
@@ -31,8 +32,11 @@ public class MainActivity extends AppCompatActivity {
 
     static final int ACT2_REQUEST = 99;
     public static final String EXTRA_MESSAGE1 = "keluar" ;
+    public static final String EXTRA_ID = "id" ;
     public String inputNama;
+    public String _id;
     public EditText masukan1;
+    Intent intent2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         masukan1 = (EditText) findViewById(R.id.username);
+        intent2 = new Intent(this, Main2Activity.class);
     }
 
     //cara 2
@@ -88,10 +93,10 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if (post_dict.length() > 0) {
-                new SendPostRequest().execute(String.valueOf(post_dict));
-                Intent intent2 = new Intent(this, Main2Activity.class);
-                intent2.putExtra(MainActivity.EXTRA_MESSAGE1, "You Have Been Log in.");
-                startActivityForResult(intent2,ACT2_REQUEST);
+                SendPostRequest sp = new SendPostRequest();
+                sp.execute(String.valueOf(post_dict));
+
+
                 masukan1.setText("");
             }
 
@@ -110,13 +115,15 @@ public class MainActivity extends AppCompatActivity {
 
         private static final String TAG = "";
 
+        public String id;
+
         protected void onPreExecute(){
 
         }
 
         @Override
         protected String doInBackground(String... params) {
-            String JsonResponse = null;
+            String JsonResponse = "";
             String JsonDATA = params[0];
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
@@ -135,30 +142,31 @@ public class MainActivity extends AppCompatActivity {
                 // json data
                 writer.close();
                 InputStream inputStream = urlConnection.getInputStream();
-                //input stream
-                StringBuffer buffer = new StringBuffer();
-                if (inputStream == null) {
-                    // Nothing to do.
-                    return null;
-                }
-                reader = new BufferedReader(new InputStreamReader(inputStream));
 
-                String inputLine;
-                while ((inputLine = reader.readLine()) != null)
-                    buffer.append(inputLine + "\n");
-                if (buffer.length() == 0) {
-                    // Stream was empty. No point in parsing.
-                    return null;
+
+                Reader r = null;
+                r = new InputStreamReader(inputStream, "UTF-8");
+                BufferedReader bfr  = new BufferedReader(r);
+                String s;
+                StringBuilder sb = new StringBuilder();
+                s = bfr.readLine();
+                while (s != null) {
+                    sb.append(s);
+                    s = bfr.readLine(); //baca per baris
                 }
-                JsonResponse = buffer.toString();
-                //response data
-                Log.i(TAG,JsonResponse);
+
+                JsonResponse  =  sb.toString().trim();
+
+                JSONObject jsonObj = new JSONObject(JsonResponse);
+
                 //send to post execute
-                return JsonResponse;
+                return jsonObj.getString("_id");
 
 
 
             } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
                 e.printStackTrace();
             } finally {
                 if (urlConnection != null) {
@@ -177,8 +185,12 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String result) {
-            Toast.makeText(getApplicationContext(), result,
-                    Toast.LENGTH_LONG).show();
+            /*Toast.makeText(getApplicationContext(), result,
+                    Toast.LENGTH_LONG).show();*/
+            intent2.putExtra(MainActivity.EXTRA_MESSAGE1, "You Have Been Log in.");
+            intent2.putExtra(MainActivity.EXTRA_ID, result);
+            startActivityForResult(intent2,ACT2_REQUEST);
+
         }
     }
 
