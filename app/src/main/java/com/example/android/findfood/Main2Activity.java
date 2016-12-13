@@ -357,6 +357,32 @@ public class Main2Activity extends AppCompatActivity implements OnMapReadyCallba
 
         Log.d("onLocationChanged", String.format("latitude:%.3f longitude:%.3f", latitude, longitude));
 
+        ConnectivityManager connMgr = (ConnectivityManager)
+                getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+
+        if (networkInfo != null && networkInfo.isConnected()) {
+
+            JSONObject post_dict = new JSONObject();
+
+            try {
+                post_dict.put("latitude" , location.getLatitude());
+                post_dict.put("longtitude" , location.getLongitude());
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            if (post_dict.length() > 0) {
+                new SendLocation().execute(String.valueOf(post_dict));
+            }
+
+        }else{
+            // tampilkan error
+            Toast t = Toast.makeText( getApplicationContext(), "Tidak ada koneksi!",Toast.LENGTH_LONG);
+            t.show();
+        }
+
         //stop location updates
         if (mGoogleApiClient != null) {
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
@@ -549,6 +575,81 @@ public class Main2Activity extends AppCompatActivity implements OnMapReadyCallba
             BufferedReader reader = null;
             try {
                 URL url = new URL("http://makersinstitute.id:5000/users/logout/");
+                urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setDoOutput(true);
+                // is output buffer writter
+                urlConnection.setRequestMethod("POST");
+                urlConnection.setRequestProperty("Content-Type", "application/json");
+                urlConnection.setRequestProperty("Accept", "application/json");
+                //set headers and method
+                Writer writer = new BufferedWriter(new OutputStreamWriter(urlConnection.getOutputStream(), "UTF-8"));
+                writer.write(JsonDATA);
+
+                // json data
+                writer.close();
+                InputStream inputStream = urlConnection.getInputStream();
+
+
+                Reader r = null;
+                r = new InputStreamReader(inputStream, "UTF-8");
+                BufferedReader bfr  = new BufferedReader(r);
+                String s;
+                StringBuilder sb = new StringBuilder();
+                s = bfr.readLine();
+                while (s != null) {
+                    sb.append(s);
+                    s = bfr.readLine(); //baca per baris
+                }
+
+                JsonResponse  =  sb.toString().trim();
+
+                //send to post execute
+                return JsonResponse;
+
+
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }  finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (final IOException e) {
+                        Log.e(TAG, "Error closing stream", e);
+                    }
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            /*Toast.makeText(getApplicationContext(), result,
+                    Toast.LENGTH_LONG).show();*/
+
+
+        }
+    }
+
+    public class SendLocation extends AsyncTask<String, Void, String> {
+
+        private static final String TAG = "";
+
+        protected void onPreExecute(){
+
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            String JsonResponse = "";
+            String JsonDATA = params[0];
+            HttpURLConnection urlConnection = null;
+            BufferedReader reader = null;
+            try {
+                URL url = new URL("http://makersinstitute.id:5000/users/" + id);
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setDoOutput(true);
                 // is output buffer writter

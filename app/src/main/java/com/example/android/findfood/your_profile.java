@@ -30,6 +30,7 @@ public class your_profile extends AppCompatActivity {
     public static final String EXTRA_ID = "id" ;
     public TextView tUsername;
     public TextView tScore;
+    public TextView tLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +46,7 @@ public class your_profile extends AppCompatActivity {
 
         tUsername = (TextView) findViewById(R.id.uName);
         tScore = (TextView) findViewById(R.id.uScore);
+        tLocation = (TextView) findViewById(R.id.uLocation);
 
         //notif
         //ambil intent
@@ -88,7 +90,8 @@ public class your_profile extends AppCompatActivity {
     private class AmbilData extends AsyncTask<String, Integer, String> {
         protected String username;
         protected String score;
-        protected String deskripsi;
+        protected String latitude;
+        protected String longitude;
 
         protected String doInBackground(String... strUrl) {
             Log.v("yw", "mulai ambil data");
@@ -137,6 +140,8 @@ public class your_profile extends AppCompatActivity {
                 JSONObject jo  =  jsonObj.getJSONObject("message");
                 username = jo.getString("username");
                 score = jo.getString("points");
+                latitude = jo.getString("latitude");
+                longitude = jo.getString("longtitude");
 
 
             } catch (MalformedURLException e) {
@@ -161,6 +166,7 @@ public class your_profile extends AppCompatActivity {
         protected void onPostExecute(String result) {
             tUsername.setText(username);
             tScore.setText(score);
+            tLocation.setText("Latitude : " + latitude + " Longitude : " + longitude);
         }
     }
 }
